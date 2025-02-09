@@ -1,7 +1,8 @@
 {
-  "name": "Just this one",
+  "$schema": "https://json.schemastore.org/chrome-manifest",
+  "name": "Just this one: skip AliExpress bundle deals",
   "description": "__MSG_description__",
-  "version": "1.3",
+  "version": "1.5",
   "manifest_version": 3,
   "icons": {"48": "icon48.png", "128": "icon128.png"},
   "content_scripts": [
@@ -13,5 +14,13 @@
       ]
     }
   ],
-  "default_locale": "en_US"
+  "default_locale": "en_US",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "worker.js",
+    "type": "module"
+  }
 }
