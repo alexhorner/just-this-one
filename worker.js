@@ -3,6 +3,12 @@ chrome.runtime.onMessage.addListener(async function (
   sender,
   sendResponse
 ) {
+  
+  let [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  chrome.tabs.create({
+    url: request["new_url"],
+    openerTabId: tab?.id,
+  });
   const storageValue = await chrome.storage.local.get(["click_count"]);
   const clickCount = parseInt(storageValue["click_count"] || "0");
   chrome.storage.local.set({ click_count: clickCount + 1 });
@@ -11,6 +17,7 @@ chrome.runtime.onMessage.addListener(async function (
   if (logResult >= 0 && Number.isInteger(logResult)) {
     chrome.tabs.create({
       url: chrome.runtime.getURL("popup.html"),
+      openerTabId: tab.id,
     });
   }
 });
