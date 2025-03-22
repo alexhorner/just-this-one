@@ -5,11 +5,41 @@ chrome.runtime.onMessage.addListener(async function (request, _0, _1) {
       break;
     case "NEVER_SHOW_THANK_YOU":
       chrome.storage.local.set({
-        never_show_thank_you: true,
+        neverShowThankYou: true,
       });
     default:
   }
 });
+
+async function maybeShowThankYou(openerTabId) {
+  let { daysNotShown, lastUsed, neverShowThankYou } =
+    await chrome.storage.local.get([
+      "daysNotShown",
+      "lastUsed",
+      "neverShowThankYou",
+    ]);
+  if (neverShowThankYou) {
+    return;
+  }
+  const currentDate = new Date().toISOString().split("T")[0];
+  if (lastUsed === currentDate) {
+    return;
+  }
+  daysNotShown = daysNotShown != null ? daysNotShown : 2;
+  if (daysNotShown >= 3) {
+    chrome.tabs.create({
+      url: chrome.runtime.getURL("thank-you.html"),
+      openerTabId,
+    });
+    daysNotShown = 0;
+  } else if (lastUsed != currentDate) {
+    daysNotShown += 1;
+  }
+  chrome.storage.local.set({
+    lastUsed: currentDate,
+    daysNotShown,
+  });
+}
 
 async function handleElementClicked(request) {
   let [tab] = await chrome.tabs.query({
@@ -27,30 +57,5 @@ async function handleElementClicked(request) {
       chrome.tabs.update(newTab.id, { active: true });
     }
   );
-  const storageValue = await chrome.storage.local.get([
-    "days_not_shown",
-    "last_used",
-    "never_show_thank_you",
-  ]);
-  const daysNotShown = storageValue["days_not_shown"];
-  const lastUsed = storageValue["last_used"];
-  const currentDate = new Date().toISOString().split("T")[0];
-  const neverShowThankYou = storageValue["never_show_thank_you"];
-  if (!neverShowThankYou && lastUsed != currentDate) {
-    if (daysNotShown == null || parseInt(daysNotShown) >= 3) {
-      chrome.storage.local.set({
-        last_used: currentDate,
-        days_not_shown: 0,
-      });
-      chrome.tabs.create({
-        url: chrome.runtime.getURL("thank-you.html"),
-        openerTabId: tab.id,
-      });
-    } else if (lastUsed != currentDate) {
-      chrome.storage.local.set({
-        last_used: currentDate,
-        days_not_shown: daysNotShown + 1,
-      });
-    }
-  }
+  maybeShowThankYou(tab?.id);
 }
