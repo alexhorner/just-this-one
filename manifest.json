@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/chrome-manifest",
   "name": "Just this one: skip AliExpress bundle deals",
   "description": "__MSG_description__",
-  "version": "1.7",
+  "version": "1.7.2",
   "manifest_version": 3,
   "icons": {"48": "icon48.png", "128": "icon128.png"},
   "content_scripts": [

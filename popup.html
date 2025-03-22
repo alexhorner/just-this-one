@@ -3,13 +3,85 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="popup.css">
-  <title>Thank You</title>
+  <title>Just This One - Thank You</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 500px;
+      background-color: #f0f4c3;
+      color: #424242;
+      font-size: 0.9em;
+      text-align: center;
+    }
+
+    .popup-container {
+      max-width: 600px;
+      padding: 20px;
+    }
+
+    .thank-you-message {
+      font-size: 1.3em;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .extension-link {
+      color: #82b19e;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+      padding-bottom: 2px;
+    }
+
+    .extension-link:hover {
+      color: #406a75;
+      border-bottom-color: #406a75; /* Change underline color on hover */
+      text-decoration: underline;
+    }
+
+    .coffee-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #82b19e;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+      margin-top: 20px;
+    }
+
+    .coffee-button:hover {
+      background-color: #406a75;
+    }
+
+    .links {
+      margin-top: 30px;
+      font-size: 0.9em;
+    }
+
+    .links a {
+      color: #666;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+
+    .links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
 </head>
 <body>
   <div class="popup-container">
-    <p class="thank-you-message">Thank you for using <i>Just this one</i> to skip AliExpress bundles.</p>
-    <div>If you find this extension useful, you can <a href="https://buymeacoffee.com/yoniaug" target="_blank">buy me a coffee</a>.</div>
-  </div>
+    <p class="thank-you-message">Thank you for using <a href="https://github.com/johnnyaug/just-this-one" target="_blank" class="extension-link">Just this one</a> to skip AliExpress bundles.</p>
+    <a href="https://buymeacoffee.com/yoniaug" target="_blank" class="coffee-button">Buy me a coffee</a>
 </body>
 </html>

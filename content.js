@@ -4,6 +4,7 @@ function addListener(element, url) {
   element.addEventListener("click", async (event) => {
     chrome.runtime.sendMessage(
       (message = {
+        type: "ELEMENT_LINK_CLICKED",
         new_url: url,
       })
     );
@@ -34,9 +35,11 @@ function handleWishList() {
 
 function handleSearchResults() {
   reg = /(.*aliexpress.com).*productIds=([0-9]*).*$/;
-  Array.from(document.querySelectorAll("[href*=BundleDeals] [class|=us--rainbow]"))
-    .filter((e) => e && !e.classList.contains("jto-link"))
-    .forEach((e) => {
+  Array.from(document.querySelectorAll("[href*=BundleDeals]"))
+    .map((e) =>
+      e.querySelector(".comet-icon")?.parentNode
+    )
+    .filter((e) => e && !e.classList.contains("jto-link")).forEach((e) => {
       e.classList.add("jto-link");
       current_url = e.closest("a").href;
       match = current_url.match(reg);
