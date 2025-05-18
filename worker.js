@@ -19,11 +19,8 @@ chrome.runtime.onMessage.addListener(async function (request, _0, _1) {
         {
           url: "https://buymeacoffee.com/yoniaug",
           openerTabId: tab?.id || 0,
-          index: 1 + (tab?.index || - 1),
-          active: false,
-        },
-        (newTab) => {
-          chrome.tabs.update(newTab.id, { active: true });
+          index: 1 + (tab?.index || -1),
+          active: true,
         }
       );
       break;
@@ -31,15 +28,13 @@ chrome.runtime.onMessage.addListener(async function (request, _0, _1) {
   }
 });
 
-function updateUsageHistory(daysNotShown, lastUsed) {
-  daysNotShown = daysNotShown != null ? daysNotShown : 1;
-  const currentDate = new Date().toISOString().split("T")[0];
+async function updateUsageHistory(daysNotShown, lastUsed, currentDate) {
   if (lastUsed === currentDate) {
     return;
   }
-  chrome.storage.local.set({
+  await chrome.storage.local.set({
     lastUsed: currentDate,
-    daysNotShown: (daysNotShown + 1) % 3,
+    daysNotShown: daysNotShown < 2 ? daysNotShown + 1 : 0,
   });
 }
 
@@ -50,8 +45,10 @@ async function maybeShowThankYou(openerTab, cb) {
       "lastUsed",
       "neverShowThankYou",
     ]);
-  updateUsageHistory(daysNotShown, lastUsed);
-  if (neverShowThankYou || daysNotShown < 2) {
+  daysNotShown = daysNotShown != null ? daysNotShown : 1;
+  const currentDate = new Date().toISOString().split("T")[0];
+  await updateUsageHistory(daysNotShown, lastUsed, currentDate);
+  if (neverShowThankYou || daysNotShown < 2 || lastUsed == currentDate) {
     cb(openerTab);
     return;
   }
@@ -59,7 +56,7 @@ async function maybeShowThankYou(openerTab, cb) {
     {
       url: chrome.runtime.getURL("thank-you.html"),
       openerTabId: openerTab?.id || 0,
-      index: 1 + (openerTab?.index || 0),
+      index: 1 + (openerTab?.index || -1),
       active: false,
     },
     cb
