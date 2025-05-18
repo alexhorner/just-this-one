@@ -11,4 +11,13 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     window.close();
   });
+  
+  document.getElementById("coffeeButton").addEventListener("click", function () {
+    chrome.runtime.sendMessage(
+      (message = {
+        type: "BUY_COFFEE",
+      })
+    );
+    window.close();
+  });
 });

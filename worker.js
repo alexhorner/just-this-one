@@ -1,61 +1,78 @@
+import { reportEvent } from "./analytics.js";
+
 chrome.runtime.onMessage.addListener(async function (request, _0, _1) {
+  let [tab] = await chrome.tabs.query({
+    active: true,
+    lastFocusedWindow: true,
+  });
   switch (request["type"]) {
     case "ELEMENT_LINK_CLICKED":
-      handleElementClicked(request);
+      reportEvent("just_this_one");
+      handleElementClicked(request, tab);
       break;
     case "NEVER_SHOW_THANK_YOU":
-      chrome.storage.local.set({
-        neverShowThankYou: true,
-      });
+      reportEvent("set_never_show_thank_you");
+      chrome.storage.local.set({ neverShowThankYou: true });
+      break;
+    case "BUY_COFFEE":
+      chrome.tabs.create(
+        {
+          url: "https://buymeacoffee.com/yoniaug",
+          openerTabId: tab?.id || 0,
+          index: 1 + (tab?.index || - 1),
+          active: false,
+        },
+        (newTab) => {
+          chrome.tabs.update(newTab.id, { active: true });
+        }
+      );
+      break;
     default:
   }
 });
 
-async function maybeShowThankYou(openerTabId) {
+function updateUsageHistory(daysNotShown, lastUsed) {
+  daysNotShown = daysNotShown != null ? daysNotShown : 1;
+  const currentDate = new Date().toISOString().split("T")[0];
+  if (lastUsed === currentDate) {
+    return;
+  }
+  chrome.storage.local.set({
+    lastUsed: currentDate,
+    daysNotShown: (daysNotShown + 1) % 3,
+  });
+}
+
+async function maybeShowThankYou(openerTab, cb) {
   let { daysNotShown, lastUsed, neverShowThankYou } =
     await chrome.storage.local.get([
       "daysNotShown",
       "lastUsed",
       "neverShowThankYou",
     ]);
-  if (neverShowThankYou) {
+  updateUsageHistory(daysNotShown, lastUsed);
+  if (neverShowThankYou || daysNotShown < 2) {
+    cb(openerTab);
     return;
   }
-  const currentDate = new Date().toISOString().split("T")[0];
-  if (lastUsed === currentDate) {
-    return;
-  }
-  daysNotShown = daysNotShown != null ? daysNotShown : 2;
-  if (daysNotShown >= 3) {
-    chrome.tabs.create({
-      url: chrome.runtime.getURL("thank-you.html"),
-      openerTabId,
-    });
-    daysNotShown = 0;
-  } else if (lastUsed != currentDate) {
-    daysNotShown += 1;
-  }
-  chrome.storage.local.set({
-    lastUsed: currentDate,
-    daysNotShown,
-  });
-}
-
-async function handleElementClicked(request) {
-  let [tab] = await chrome.tabs.query({
-    active: true,
-    lastFocusedWindow: true,
-  });
   chrome.tabs.create(
     {
-      url: request["new_url"],
-      openerTabId: tab?.id,
-      index: (tab?.id || -1) + 1,
+      url: chrome.runtime.getURL("thank-you.html"),
+      openerTabId: openerTab?.id || 0,
+      index: 1 + (openerTab?.index || 0),
       active: false,
     },
-    (newTab) => {
-      chrome.tabs.update(newTab.id, { active: true });
-    }
+    cb
   );
-  maybeShowThankYou(tab?.id);
+}
+
+async function handleElementClicked(request, openerTab) {
+  await maybeShowThankYou(openerTab, (tabToGoAfter) => {
+    chrome.tabs.create({
+      url: request["new_url"],
+      openerTabId: tabToGoAfter?.id,
+      index: 1 + (tabToGoAfter?.index || 0),
+      active: true,
+    });
+  });
 }
