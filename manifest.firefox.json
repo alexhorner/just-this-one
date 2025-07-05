@@ -1,0 +1,25 @@
+{
+  "name": "Just this one: Skip AliExpress bundle deals",
+  "description": "__MSG_description__",
+  "version": "1.7.6",
+  "manifest_version": 3,
+  "icons": {"48": "icon48.png", "128": "icon128.png"},
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "matches": [
+        "https://*.aliexpress.com/*",
+        "https://aliexpress.com/*"
+      ]
+    }
+  ],
+  "default_locale": "en_US",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage"],
+  "background": {
+    "scripts": ["worker.js"],
+    "type": "module"
+  }
+}
