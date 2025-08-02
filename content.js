@@ -34,7 +34,7 @@ function handleWishList() {
 }
 
 function handleSearchResults() {
-  reg = /(.*aliexpress.com).*productIds=([0-9]*).*$/;
+  reg = /(.*aliexpress.(?:com|us|ru)).*productIds=([0-9]*).*$/;
   Array.from(document.querySelectorAll("[href*=BundleDeals]"))
     .map((e) =>
       e.querySelector(".comet-icon")?.parentNode
