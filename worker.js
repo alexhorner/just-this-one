@@ -15,14 +15,12 @@ chrome.runtime.onMessage.addListener(async function (request, _0, _1) {
       chrome.storage.local.set({ neverShowThankYou: true });
       break;
     case "BUY_COFFEE":
-      chrome.tabs.create(
-        {
-          url: "https://buymeacoffee.com/yoniaug",
-          openerTabId: tab?.id || 0,
-          index: 1 + (tab?.index || -1),
-          active: true,
-        }
-      );
+      chrome.tabs.create({
+        url: "https://buymeacoffee.com/yoniaug",
+        openerTabId: tab?.id || 0,
+        index: 1 + (tab?.index || -1),
+        active: true,
+      });
       break;
     default:
   }
@@ -38,7 +36,7 @@ async function updateUsageHistory(daysNotShown, lastUsed, currentDate) {
   });
 }
 
-async function maybeShowThankYou(openerTab, cb) {
+async function maybeShowThankYou(openerTab) {
   let { daysNotShown, lastUsed, neverShowThankYou } =
     await chrome.storage.local.get([
       "daysNotShown",
@@ -49,27 +47,25 @@ async function maybeShowThankYou(openerTab, cb) {
   const currentDate = new Date().toISOString().split("T")[0];
   await updateUsageHistory(daysNotShown, lastUsed, currentDate);
   if (neverShowThankYou || daysNotShown < 2 || lastUsed == currentDate) {
-    cb(openerTab);
     return;
   }
-  chrome.tabs.create(
-    {
-      url: chrome.runtime.getURL("thank-you.html"),
-      openerTabId: openerTab?.id || 0,
-      index: 1 + (openerTab?.index || -1),
-      active: false,
-    },
-    cb
-  );
+  reportEvent("show_thank_you");
+  chrome.tabs.create({
+    url: chrome.runtime.getURL("thank-you.html"),
+    openerTabId: openerTab?.id,
+    index: 1 + (openerTab?.index || 0),
+    active: true,
+  });
 }
 
 async function handleElementClicked(request, openerTab) {
-  await maybeShowThankYou(openerTab, (tabToGoAfter) => {
-    chrome.tabs.create({
+  chrome.tabs.create(
+    {
       url: request["new_url"],
-      openerTabId: tabToGoAfter?.id,
-      index: 1 + (tabToGoAfter?.index || 0),
+      openerTabId: openerTab?.id,
+      index: 1 + (openerTab?.index || 0),
       active: true,
-    });
-  });
+    },
+    maybeShowThankYou
+  );
 }
